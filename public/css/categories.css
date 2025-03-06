@@ -1,0 +1,52 @@
+/* Category specific styles */
+.category-card {
+    @apply bg-white rounded-lg shadow-md p-6 mb-4;
+}
+
+.category-title {
+    @apply text-xl font-semibold mb-2;
+}
+
+.category-description {
+    @apply text-gray-600 mb-4;
+}
+
+.category-stats {
+    @apply text-sm text-gray-500;
+}
+
+/* Category form styles */
+.category-form {
+    @apply space-y-4;
+}
+
+.category-form-group {
+    @apply flex flex-col;
+}
+
+/* Category table styles */
+.category-table {
+    @apply min-w-full divide-y divide-gray-200;
+}
+
+.category-table-header {
+    @apply bg-gray-50;
+}
+
+.category-table-row {
+    @apply hover:bg-gray-50;
+}
+
+/* Category modal styles */
+.category-modal-content {
+    @apply bg-white p-6 rounded-lg shadow-xl max-w-md mx-auto mt-16;
+}
+
+.category-modal-header {
+    @apply text-lg font-medium mb-4 pb-2 border-b;
+}
+
+/* Category action buttons */
+.category-action-buttons {
+    @apply flex justify-end space-x-2 mt-4;
+} 

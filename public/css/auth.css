@@ -1,0 +1,75 @@
+/* Auth pages common styles */
+.auth-container {
+    @apply min-h-screen flex items-center justify-center bg-gray-100;
+}
+
+.auth-card {
+    @apply bg-white p-8 rounded-lg shadow-md w-full max-w-md;
+}
+
+.auth-header {
+    @apply text-2xl font-bold text-center mb-6 text-gray-800;
+}
+
+.auth-subheader {
+    @apply text-sm text-gray-600 text-center mb-8;
+}
+
+/* Form styles */
+.auth-form {
+    @apply space-y-6;
+}
+
+.auth-form-group {
+    @apply space-y-2;
+}
+
+.auth-input {
+    @apply w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.auth-label {
+    @apply block text-sm font-medium text-gray-700;
+}
+
+/* Button styles */
+.auth-submit-btn {
+    @apply w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors;
+}
+
+.auth-link {
+    @apply text-sm text-blue-600 hover:text-blue-800 transition-colors;
+}
+
+/* Message styles */
+.auth-message {
+    @apply mb-4 p-4 rounded-md text-center;
+}
+
+.auth-message-error {
+    @apply bg-red-100 text-red-700;
+}
+
+.auth-message-success {
+    @apply bg-green-100 text-green-700;
+}
+
+/* Additional form elements */
+.auth-checkbox-group {
+    @apply flex items-center space-x-2;
+}
+
+.auth-checkbox {
+    @apply h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+}
+
+.auth-select {
+    @apply w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .auth-card {
+        @apply mx-4;
+    }
+} 

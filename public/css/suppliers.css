@@ -1,0 +1,92 @@
+/* Supplier specific styles */
+.supplier-card {
+    @apply bg-white rounded-lg shadow-md p-6 mb-4;
+}
+
+.supplier-title {
+    @apply text-xl font-semibold mb-2;
+}
+
+.supplier-description {
+    @apply text-gray-600 mb-4;
+}
+
+/* Supplier form styles */
+.supplier-form {
+    @apply space-y-4;
+}
+
+.supplier-form-group {
+    @apply flex flex-col;
+}
+
+.supplier-input {
+    @apply w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.supplier-label {
+    @apply block text-sm font-medium text-gray-700;
+}
+
+/* Supplier table styles */
+.supplier-table {
+    @apply min-w-full divide-y divide-gray-200;
+}
+
+.supplier-table-header {
+    @apply bg-gray-50;
+}
+
+.supplier-table-row {
+    @apply hover:bg-gray-50;
+}
+
+.supplier-table-cell {
+    @apply px-6 py-4 whitespace-nowrap;
+}
+
+/* Supplier modal styles */
+.supplier-modal-content {
+    @apply bg-white p-6 rounded-lg shadow-xl max-w-md mx-auto mt-16;
+}
+
+.supplier-modal-header {
+    @apply text-lg font-medium mb-4 pb-2 border-b;
+}
+
+/* Supplier action buttons */
+.supplier-action-buttons {
+    @apply flex justify-end space-x-2 mt-4;
+}
+
+.supplier-btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+.supplier-btn-secondary {
+    @apply bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+}
+
+/* Supplier status indicators */
+.supplier-status {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.supplier-status-active {
+    @apply bg-green-100 text-green-800;
+}
+
+.supplier-status-inactive {
+    @apply bg-red-100 text-red-800;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .supplier-form {
+        @apply grid-cols-1;
+    }
+    
+    .supplier-table-cell {
+        @apply px-4 py-2;
+    }
+} 
