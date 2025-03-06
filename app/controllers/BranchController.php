@@ -4,7 +4,6 @@ namespace app\controllers;
 
 use app\core\BaseController;
 use app\models\Branch;
-use Exception;
 
 class BranchController extends BaseController {
     private $branchModel;
@@ -15,147 +14,84 @@ class BranchController extends BaseController {
 
     public function index() {
         try {
-            $branches = $this->branchModel->getAll();
+            $branches = $this->branchModel->getAllBranches();
             $this->renderView('branches/index', ['branches' => $branches]);
-        } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+        } catch (\Exception $e) {
+            $this->renderView('branches/index', [
+                'branches' => [],
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
     public function create() {
-        $this->renderView('branches/create');
-    }
-
-    public function store() {
-        try {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                throw new Exception('طريقة طلب غير صحيحة');
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                $result = $this->branchModel->createBranch($_POST);
+                header('Content-Type: application/json');
+                echo json_encode($result);
+                exit;
+            } catch (\Exception $e) {
+                header('Content-Type: application/json');
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+                exit;
             }
-
-            $result = $this->branchModel->create($_POST);
-            
-            if ($result) {
-                $this->jsonResponse([
-                    'status' => 'success',
-                    'message' => 'تم إنشاء الفرع بنجاح'
-                ]);
-            } else {
-                throw new Exception('فشل في إنشاء الفرع');
-            }
-        } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
         }
     }
 
-    public function update() {
-        try {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                throw new Exception('طريقة طلب غير صحيحة');
+    public function edit($id) {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            try {
+                $branch = $this->branchModel->getBranchById($id);
+                header('Content-Type: application/json');
+                if ($branch) {
+                    echo json_encode(['status' => 'success', 'data' => $branch]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['status' => 'error', 'message' => 'الفرع غير موجود']);
+                }
+                exit;
+            } catch (\Exception $e) {
+                header('Content-Type: application/json');
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+                exit;
             }
-
-            if (!isset($_POST['id'])) {
-                throw new Exception('معرف الفرع مطلوب');
+        } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                $_POST['id'] = $id;
+                $result = $this->branchModel->updateBranch($_POST);
+                header('Content-Type: application/json');
+                echo json_encode($result);
+                exit;
+            } catch (\Exception $e) {
+                header('Content-Type: application/json');
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+                exit;
             }
-
-            $result = $this->branchModel->update($_POST);
-            
-            if ($result) {
-                $this->jsonResponse([
-                    'status' => 'success',
-                    'message' => 'تم تحديث الفرع بنجاح'
-                ]);
-            } else {
-                throw new Exception('فشل في تحديث الفرع');
-            }
-        } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
         }
     }
 
-    public function delete() {
-        try {
-            if (!isset($_GET['id'])) {
-                throw new Exception('معرف الفرع مطلوب');
+    public function delete($id) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                $success = $this->branchModel->deleteBranch($id);
+                header('Content-Type: application/json');
+                if ($success) {
+                    echo json_encode(['status' => 'success', 'message' => 'تم حذف الفرع بنجاح']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['status' => 'error', 'message' => 'فشل حذف الفرع']);
+                }
+                exit;
+            } catch (\Exception $e) {
+                header('Content-Type: application/json');
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+                exit;
             }
-
-            $result = $this->branchModel->delete($_GET['id']);
-            
-            if ($result) {
-                $this->jsonResponse([
-                    'status' => 'success',
-                    'message' => 'تم حذف الفرع بنجاح'
-                ]);
-            } else {
-                throw new Exception('فشل في حذف الفرع');
-            }
-        } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function getBranches() {
-        try {
-            $branches = $this->branchModel->getAll();
-            $this->jsonResponse([
-                'status' => 'success',
-                'data' => $branches
-            ]);
-        } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function getLast20Branches() {
-        try {
-            $branches = $this->branchModel->getLast20Branches();
-            $this->jsonResponse([
-                'status' => 'success',
-                'data' => $branches
-            ]);
-        } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function edit() {
-        try {
-            if (!isset($_GET['id'])) {
-                throw new Exception('معرف الفرع مطلوب');
-            }
-
-            $branch = $this->branchModel->getById($_GET['id']);
-            if (!$branch) {
-                throw new Exception('الفرع غير موجود');
-            }
-
-            $this->jsonResponse([
-                'status' => 'success',
-                'branch' => $branch
-            ]);
-        } catch (Exception $e) {
-            error_log("Branch Edit Error: " . $e->getMessage());
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
         }
     }
 } 

@@ -5,63 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const createForm = document.getElementById("createBranchForm");
     const editForm = document.getElementById("editBranchForm");
 
-    // Only add event listeners if the elements exist
-    if (createForm) {
-        createForm.addEventListener("submit", function (event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-
-            fetch("/NMaterailManegmentT/public/index.php?controller=branch&action=create", {
-                method: "POST",
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === "success") {
-                        alert(data.message);
-                        closeCreateModal();
-                        location.reload();
-                    } else {
-                        alert("خطأ: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    alert("حدث خطأ أثناء إضافة الفرع");
-                });
-        });
-    }
-
-    if (editForm) {
-        editForm.addEventListener("submit", function (event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            
-            // Convert status value to 'active' or 'inactive' before sending
-            const statusSelect = document.getElementById("editStatus");
-            formData.set('status', statusSelect.value === '1' ? 'active' : 'inactive');
-
-            fetch("/NMaterailManegmentT/public/index.php?controller=branch&action=update", {
-                method: "POST",
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === "success") {
-                        alert(data.message);
-                        closeEditModal();
-                        location.reload();
-                    } else {
-                        alert("خطأ: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    alert("حدث خطأ أثناء تحديث الفرع");
-                });
-        });
-    }
-
     // Create Modal Functions
     window.openCreateModal = function() {
         if (createModal) {
@@ -100,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         'editPhone': branch.phone || '',
                         'editEmail': branch.email || '',
                         'editManagerName': branch.manager_name || '',
-                        'editStatus': branch.status === 'active' ? '1' : '0',
+                        'editStatus': branch.status,
                         'editNotes': branch.notes || ''
                     };
 
@@ -134,6 +77,60 @@ document.addEventListener("DOMContentLoaded", function () {
             editModal.classList.add("hidden");
         }
     };
+
+    // Create Form Submission
+    if (createForm) {
+        createForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch("/NMaterailManegmentT/public/index.php?controller=branch&action=create", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        alert(data.message);
+                        closeCreateModal();
+                        location.reload();
+                    } else {
+                        alert("خطأ: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("حدث خطأ أثناء إضافة الفرع");
+                });
+        });
+    }
+
+    // Edit Form Submission
+    if (editForm) {
+        editForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch("/NMaterailManegmentT/public/index.php?controller=branch&action=update", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        alert(data.message);
+                        closeEditModal();
+                        location.reload();
+                    } else {
+                        alert("خطأ: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("حدث خطأ أثناء تحديث الفرع");
+                });
+        });
+    }
 
     // Delete Branch
     window.deleteBranch = function(branchId) {

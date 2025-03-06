@@ -3,8 +3,9 @@
     "description": "Material Management System",
     "type": "project",
     "require": {
-        "php": ">=7.4",
-        "vlucas/phpdotenv": "^5.5"
+        "php": ">=8.0",
+        "vlucas/phpdotenv": "^5.5",
+        "ext-pdo": "*"
     },
     "autoload": {
         "psr-4": {

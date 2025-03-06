@@ -4,118 +4,199 @@ namespace app\models;
 
 use PDO;
 use PDOException;
-use config\Database;
+use Exception;
+use app\core\Database;
 
 class Branch {
-    private $conn;
-    private $table = 'branches';
+    private $pdo;
 
     public function __construct() {
         $database = new Database();
-        $this->conn = $database->getConnection();
+        $this->pdo = $database->getConnection();
     }
 
-    public function getAll() {
+    public function getAllBranches() {
         try {
-            $stmt = $this->conn->prepare("
-                SELECT * FROM {$this->table} 
-                WHERE is_deleted IS NULL
+            $stmt = $this->pdo->query("
+                SELECT * FROM branches 
+                WHERE deleted_at IS NULL 
                 ORDER BY name ASC
             ");
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $result = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $result[] = $row;
+            }
+            return $result;
         } catch (PDOException $e) {
             error_log($e->getMessage());
-            throw new \Exception("خطأ في استرجاع الفروع");
+            throw new Exception("حدث خطأ أثناء استرجاع الفروع");
         }
     }
 
-    public function getById($id) {
+    public function getBranchById($id) {
         try {
-            $stmt = $this->conn->prepare("
-                SELECT * FROM {$this->table} 
-                WHERE id = ? AND is_deleted IS NULL
+            $stmt = $this->pdo->prepare("
+                SELECT * FROM branches 
+                WHERE id = :id AND deleted_at IS NULL
             ");
-            $stmt->execute([$id]);
+            $stmt->execute([':id' => (int)$id]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log($e->getMessage());
-            throw new \Exception("خطأ في استرجاع بيانات الفرع");
+            throw new Exception("حدث خطأ أثناء استرجاع بيانات الفرع");
         }
     }
 
-    public function create($data) {
+    public function createBranch($data) {
         try {
             if (empty($data['name'])) {
-                throw new \Exception("اسم الفرع مطلوب");
+                throw new Exception("اسم الفرع مطلوب");
             }
 
-            $stmt = $this->conn->prepare("
-                INSERT INTO {$this->table} (name, address, phone, email, manager_name, status, notes, created_at, updated_at) 
-                VALUES (:name, :address, :phone, :email, :manager_name, :status, :notes, NOW(), NOW())
+            // التحقق من عدم تكرار اسم الفرع
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM branches WHERE name = :name AND deleted_at IS NULL");
+            $stmt->execute([':name' => $data['name']]);
+            if ($stmt->fetchColumn() > 0) {
+                throw new Exception("هذا الفرع موجود بالفعل");
+            }
+
+            $stmt = $this->pdo->prepare("
+                INSERT INTO branches (name, address, phone, email, manager_name, status, notes) 
+                VALUES (:name, :address, :phone, :email, :manager_name, :status, :notes)
             ");
 
-            return $stmt->execute([
+            $success = $stmt->execute([
                 ':name' => $data['name'],
-                ':address' => $data['address'] ?? null,
-                ':phone' => $data['phone'] ?? null,
-                ':email' => $data['email'] ?? null,
-                ':manager_name' => $data['manager_name'] ?? null,
-                ':status' => $data['status'] ?? '1',
-                ':notes' => $data['notes'] ?? null
+                ':address' => $data['address'] ?? '',
+                ':phone' => $data['phone'] ?? '',
+                ':email' => $data['email'] ?? '',
+                ':manager_name' => $data['manager_name'] ?? '',
+                ':status' => $data['status'] ?? 'active',
+                ':notes' => $data['notes'] ?? ''
             ]);
-        } catch (PDOException $e) {
+
+            if (!$success) {
+                throw new Exception("فشل في إضافة الفرع");
+            }
+
+            return [
+                'status' => 'success',
+                'message' => 'تم إضافة الفرع بنجاح'
+            ];
+        } catch (Exception $e) {
             error_log($e->getMessage());
-            throw new \Exception("خطأ في إنشاء الفرع");
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
         }
     }
 
-    public function update($data) {
+    public function updateBranch($data) {
         try {
             if (empty($data['id']) || empty($data['name'])) {
-                throw new \Exception("البيانات الأساسية مطلوبة");
+                throw new Exception("معرف واسم الفرع مطلوبان");
             }
 
-            $stmt = $this->conn->prepare("
-                UPDATE {$this->table} SET 
-                name = :name,
-                address = :address,
-                phone = :phone,
-                email = :email,
-                manager_name = :manager_name,
-                status = :status,
-                notes = :notes,
-                updated_at = NOW()
-                WHERE id = :id AND is_deleted IS NULL
-            ");
+            // التحقق من وجود الفرع
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM branches WHERE id = :id AND deleted_at IS NULL");
+            $stmt->execute([':id' => (int)$data['id']]);
+            if ($stmt->fetchColumn() == 0) {
+                throw new Exception("الفرع غير موجود");
+            }
 
-            return $stmt->execute([
-                ':id' => $data['id'],
+            // التحقق من عدم تكرار اسم الفرع
+            $stmt = $this->pdo->prepare("
+                SELECT COUNT(*) FROM branches 
+                WHERE name = :name AND id != :id AND deleted_at IS NULL
+            ");
+            $stmt->execute([
                 ':name' => $data['name'],
-                ':address' => $data['address'] ?? null,
-                ':phone' => $data['phone'] ?? null,
-                ':email' => $data['email'] ?? null,
-                ':manager_name' => $data['manager_name'] ?? null,
-                ':status' => $data['status'] ?? '1',
-                ':notes' => $data['notes'] ?? null
+                ':id' => (int)$data['id']
             ]);
-        } catch (PDOException $e) {
+            if ($stmt->fetchColumn() > 0) {
+                throw new Exception("هذا الاسم موجود بالفعل");
+            }
+
+            $sql = "UPDATE branches SET 
+                    name = :name,
+                    address = :address,
+                    phone = :phone,
+                    email = :email,
+                    manager_name = :manager_name,
+                    status = :status,
+                    notes = :notes,
+                    updated_at = NOW()
+                    WHERE id = :id AND deleted_at IS NULL";
+
+            $stmt = $this->pdo->prepare($sql);
+            
+            $success = $stmt->execute([
+                ':id' => (int)$data['id'],
+                ':name' => $data['name'],
+                ':address' => $data['address'] ?? '',
+                ':phone' => $data['phone'] ?? '',
+                ':email' => $data['email'] ?? '',
+                ':manager_name' => $data['manager_name'] ?? '',
+                ':status' => $data['status'] ?? 'active',
+                ':notes' => $data['notes'] ?? ''
+            ]);
+
+            if (!$success) {
+                throw new Exception("فشل تحديث الفرع");
+            }
+
+            return [
+                'status' => 'success',
+                'message' => 'تم تحديث الفرع بنجاح'
+            ];
+        } catch (Exception $e) {
             error_log($e->getMessage());
-            throw new \Exception("خطأ في تحديث الفرع");
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
         }
     }
 
-    public function delete($id) {
+    public function deleteBranch($id) {
         try {
-            $stmt = $this->conn->prepare("
-                UPDATE {$this->table} 
-                SET is_deleted = 1, deleted_at = NOW()
-                WHERE id = ?
-            ");
-            return $stmt->execute([$id]);
-        } catch (PDOException $e) {
+            if (empty($id)) {
+                throw new Exception("معرف الفرع مطلوب");
+            }
+
+            // التحقق من وجود الفرع
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM branches WHERE id = :id AND deleted_at IS NULL");
+            $stmt->execute([':id' => (int)$id]);
+            if ($stmt->fetchColumn() == 0) {
+                throw new Exception("الفرع غير موجود");
+            }
+
+            // التحقق من عدم وجود مواد مرتبطة بالفرع
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM materials WHERE branch_id = :id AND deleted_at IS NULL");
+            $stmt->execute([':id' => (int)$id]);
+            if ($stmt->fetchColumn() > 0) {
+                throw new Exception("لا يمكن حذف الفرع لوجود مواد مرتبطة به");
+            }
+
+            // التحقق من عدم وجود مستخدمين مرتبطين بالفرع
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE branch_id = :id AND deleted_at IS NULL");
+            $stmt->execute([':id' => (int)$id]);
+            if ($stmt->fetchColumn() > 0) {
+                throw new Exception("لا يمكن حذف الفرع لوجود مستخدمين مرتبطين به");
+            }
+
+            $stmt = $this->pdo->prepare("UPDATE branches SET deleted_at = NOW() WHERE id = :id");
+            $success = $stmt->execute([':id' => (int)$id]);
+
+            if (!$success) {
+                throw new Exception("فشل حذف الفرع");
+            }
+
+            return true;
+        } catch (Exception $e) {
             error_log($e->getMessage());
-            throw new \Exception("خطأ في حذف الفرع");
+            return false;
         }
     }
 } 
