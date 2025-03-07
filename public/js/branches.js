@@ -1,7 +1,173 @@
 // تحميل الفروع عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    //loadBranches();
+    // Initialize event listeners
+    initializeEventListeners();
+    
+    // Initialize datatable if present
+    initializeDataTable();
 });
+
+function initializeEventListeners() {
+    // Add Branch Form
+    const addBranchForm = document.getElementById('addBranchForm');
+    if (addBranchForm) {
+        addBranchForm.addEventListener('submit', handleAddBranch);
+    }
+
+    // Edit Branch Form
+    const editBranchForm = document.getElementById('editBranchForm');
+    if (editBranchForm) {
+        editBranchForm.addEventListener('submit', handleEditBranch);
+    }
+
+    // Delete Branch Buttons
+    const deleteBtns = document.querySelectorAll('.delete-branch-btn');
+    deleteBtns.forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', handleDeleteBranch);
+        }
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('searchBranch');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch);
+    }
+}
+
+function initializeDataTable() {
+    const branchTable = document.getElementById('branchTable');
+    if (branchTable) {
+        $(branchTable).DataTable({
+            responsive: true,
+            order: [[0, 'desc']],
+            language: {
+                search: "بحث:",
+                lengthMenu: "عرض _MENU_ سجلات",
+                info: "عرض _START_ إلى _END_ من _TOTAL_ سجل",
+                paginate: {
+                    first: "الأول",
+                    last: "الأخير",
+                    next: "التالي",
+                    previous: "السابق"
+                }
+            }
+        });
+    }
+}
+
+async function handleAddBranch(e) {
+    e.preventDefault();
+    try {
+        const formData = new FormData(e.target);
+        const response = await fetch('/NMaterailManegmentT/public/branches/add', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showAlert('success', 'تم إضافة الفرع بنجاح');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showAlert('error', result.message || 'حدث خطأ أثناء إضافة الفرع');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('error', 'حدث خطأ في النظام');
+    }
+}
+
+async function handleEditBranch(e) {
+    e.preventDefault();
+    try {
+        const formData = new FormData(e.target);
+        const branchId = e.target.dataset.branchId;
+        
+        const response = await fetch(`/NMaterailManegmentT/public/branches/edit/${branchId}`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showAlert('success', 'تم تحديث الفرع بنجاح');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showAlert('error', result.message || 'حدث خطأ أثناء تحديث الفرع');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('error', 'حدث خطأ في النظام');
+    }
+}
+
+async function handleDeleteBranch(e) {
+    if (!confirm('هل أنت متأكد من حذف هذا الفرع؟')) {
+        return;
+    }
+    
+    try {
+        const branchId = e.target.dataset.branchId;
+        const response = await fetch(`/NMaterailManegmentT/public/branches/delete/${branchId}`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showAlert('success', 'تم حذف الفرع بنجاح');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showAlert('error', result.message || 'حدث خطأ أثناء حذف الفرع');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('error', 'حدث خطأ في النظام');
+    }
+}
+
+function handleSearch(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const table = document.getElementById('branchTable');
+    if (!table) return;
+
+    const rows = table.getElementsByTagName('tr');
+    
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
+        
+        for (let cell of cells) {
+            if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                found = true;
+                break;
+            }
+        }
+        
+        row.style.display = found ? '' : 'none';
+    }
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto dismiss after 3 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+}
 
 // تحميل الفروع
 function loadBranches() {
@@ -94,112 +260,6 @@ window.onclick = function(event) {
         editModal.style.display = 'none';
     }
 }
-
-// معالجة إضافة فرع جديد
-document.getElementById('createBranchForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch('/NMaterailManegmentT/public/index.php?controller=branch&action=create', {
-                method: 'POST',
-                body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showSuccess('تم إضافة الفرع بنجاح');
-            closeCreateModal();
-            loadBranches();
-        } else {
-            showError(data.message || 'خطأ في إضافة الفرع');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError('حدث خطأ أثناء إضافة الفرع');
-    });
-});
-
-// معالجة تعديل فرع
-document.getElementById('editBranchForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch('/NMaterailManegmentT/public/index.php?controller=branch&action=update', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showSuccess('تم تحديث الفرع بنجاح');
-                closeEditModal();
-                loadBranches();
-            } else {
-            showError(data.message || 'خطأ في تحديث الفرع');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError('حدث خطأ أثناء تحديث الفرع');
-    });
-});
-
-// حذف فرع
-/*function deleteBranch(branchId) {
-    if (confirm('هل أنت متأكد من حذف هذا الفرع؟')) {
-        fetch(`/NMaterailManegmentT/public/index.php?controller=branch&action=delete&id=${branchId}`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showSuccess('تم حذف الفرع بنجاح');
-                loadBranches();
-            } else {
-                showError(data.message || 'خطأ في حذف الفرع');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError('حدث خطأ أثناء حذف الفرع');
-        });
-    }
-}*/
-
-
-
-function deleteBranch(branchId) {
-    if (confirm('هل أنت متأكد من حذف هذا الفرع؟')) {
-        fetch(`/NMaterailManegmentT/public/index.php?controller=branch&action=delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `id=${branchId}`
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    showSuccess('تم حذف الفرع بنجاح');
-                    loadBranches();
-                } else {
-                    showError(data.message || 'خطأ في حذف الفرع');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('حدث خطأ أثناء حذف الفرع');
-            });
-    }
-}
-
-
-
-
-
 
 // عرض رسالة نجاح
 function showSuccess(message) {

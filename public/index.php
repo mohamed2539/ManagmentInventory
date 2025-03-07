@@ -1,37 +1,66 @@
 <?php
 
-// Set error display
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Define base path
+// Define constants
 define('ROOT_PATH', dirname(__DIR__));
+define('DEBUG', true); // Set to false in production
 
-// Load autoloader
+// Composer autoloader
 require_once ROOT_PATH . '/vendor/autoload.php';
 
-// Register custom autoloader
-spl_autoload_register(function ($class) {
-    $file = ROOT_PATH . '/' . str_replace('\\', '/', $class) . '.php';
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
-
-// Check for .env file
-if (file_exists(ROOT_PATH . '/.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(ROOT_PATH);
-    $dotenv->load();
-} else {
-    die('.env file not found. Please copy .env.example to .env');
-}
-
-// Set timezone
-date_default_timezone_set('Africa/Cairo');
+// Error handling
+set_error_handler(['app\core\ErrorHandler', 'handleError']);
+set_exception_handler(['app\core\ErrorHandler', 'handleException']);
+register_shutdown_function(['app\core\ErrorHandler', 'handleFatalError']);
 
 // Start session
 session_start();
 
-// Initialize router and dispatch request
-$router = app\core\Router::getInstance();
-$router->dispatch(); 
+// Parse the URL
+$url = isset($_GET['url']) ? $_GET['url'] : '';
+$url = rtrim($url, '/');
+$url = filter_var($url, FILTER_SANITIZE_URL);
+$url = explode('/', $url);
+
+// Set default controller and action
+$controller = !empty($url[0]) ? strtolower($url[0]) : 'home';
+$action = !empty($url[1]) ? strtolower($url[1]) : 'index';
+
+// Remove controller and action from the URL array
+array_shift($url);
+if (!empty($url)) {
+    array_shift($url);
+}
+
+// Parameters are the remaining elements in the URL array
+$params = $url;
+
+// Build the controller class name with proper casing
+$controllerName = ucfirst($controller);
+$controllerClass = "app\\controllers\\{$controllerName}Controller";
+
+try {
+    // Check if controller exists
+    if (!class_exists($controllerClass)) {
+        throw new \Exception("Controller not found: {$controllerName}");
+    }
+
+    // Create controller instance
+    $controller = new $controllerClass();
+    
+    // Check if action exists
+    if (!method_exists($controller, $action)) {
+        throw new \Exception("Action not found: {$action}");
+    }
+
+    // Call the action with parameters
+    call_user_func_array([$controller, $action], $params);
+
+} catch (\Exception $e) {
+    if (DEBUG) {
+        throw $e;
+    } else {
+        // Redirect to error controller
+        $errorController = new \app\controllers\ErrorController();
+        $errorController->notFound();
+    }
+} 

@@ -2,19 +2,25 @@
 
 namespace app\core;
 
-abstract class BaseController {
-    protected function loadModel($model) {
-        $modelPath = "../app/models/$model.php";
-        $modelClass = "app\\models\\$model";
+use app\core\View;
+use config\Database;
 
-        if (file_exists($modelPath)) {
-            require_once $modelPath;
-            if (class_exists($modelClass)) {
-                return new $modelClass();
-            }
-            throw new \Exception("Class $modelClass not found in file");
+abstract class BaseController {
+    protected $db;
+    protected $view;
+    protected $model;
+
+    public function __construct() {
+        $this->db = Database::getInstance()->connect();
+        $this->view = new View();
+    }
+
+    protected function loadModel($model) {
+        $modelClass = "app\\models\\" . $model;
+        if (class_exists($modelClass)) {
+            return new $modelClass($this->db);
         }
-        throw new \Exception("Model $model not found");
+        throw new \Exception("Model {$model} not found");
     }
 
     protected function renderView($view, $data = []) {
@@ -89,14 +95,27 @@ abstract class BaseController {
         return json_decode(file_get_contents('php://input'), true) ?? [];
     }
 
-    protected function redirect($controller, $action = 'index', $params = []) {
-        $url = "/NMaterailManegmentT/public/index.php?controller=$controller&action=$action";
-        if (!empty($params)) {
-            foreach ($params as $key => $value) {
-                $url .= "&$key=$value";
-            }
-        }
-        header("Location: $url");
-        exit;
+    protected function redirect($url) {
+        header("Location: /NMaterailManegmentT/public/" . $url);
+        exit();
+    }
+
+    protected function isAjax() {
+        return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    }
+
+    protected function json($data) {
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit();
+    }
+
+    protected function isPost() {
+        return $_SERVER['REQUEST_METHOD'] === 'POST';
+    }
+
+    protected function isGet() {
+        return $_SERVER['REQUEST_METHOD'] === 'GET';
     }
 } 

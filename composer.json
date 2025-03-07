@@ -1,16 +1,26 @@
 {
-    "name": "nmaterialmanagement/app",
+    "name": "material-management/system",
     "description": "Material Management System",
     "type": "project",
     "require": {
-        "php": ">=8.0",
-        "vlucas/phpdotenv": "^5.5",
-        "ext-pdo": "*"
+        "php": ">=7.4"
     },
     "autoload": {
         "psr-4": {
             "app\\": "app/",
             "config\\": "config/"
+        },
+        "classmap": [
+            "app/core/",
+            "app/models/",
+            "app/controllers/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Mohamed",
+            "email": "mohamed@example.com"
         }
-    }
+    ],
+    "minimum-stability": "stable"
 } 
