@@ -283,4 +283,138 @@ function showError(message) {
     `;
     document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.card'));
     setTimeout(() => alertDiv.remove(), 3000);
-} 
+}
+
+// Load branches on page load
+document.addEventListener('DOMContentLoaded', loadBranches);
+
+async function loadBranches() {
+    try {
+        const response = await apiCall('branch', 'index');
+        if (response.success) {
+            displayBranches(response.data);
+        } else {
+            showError(response.message || 'حدث خطأ أثناء تحميل الفروع');
+        }
+    } catch (error) {
+        showError('حدث خطأ أثناء تحميل الفروع');
+        console.error(error);
+    }
+}
+
+async function editBranch(branchId) {
+    try {
+        const response = await apiCall('branch', 'edit', 'GET', null, { id: branchId });
+        if (response.success) {
+            document.getElementById('editBranchId').value = response.data.id;
+            document.getElementById('editBranchName').value = response.data.name;
+            document.getElementById('editBranchLocation').value = response.data.location;
+            document.getElementById('editBranchPhone').value = response.data.phone;
+            
+            // Show edit modal
+            const editModal = document.getElementById('editBranchModal');
+            editModal.classList.remove('hidden');
+        } else {
+            showError(response.message || 'حدث خطأ أثناء تحميل بيانات الفرع');
+        }
+    } catch (error) {
+        showError('حدث خطأ أثناء تحميل بيانات الفرع');
+        console.error(error);
+    }
+}
+
+async function createBranch(event) {
+    event.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('branchName').value,
+        location: document.getElementById('branchLocation').value,
+        phone: document.getElementById('branchPhone').value
+    };
+
+    try {
+        const response = await apiCall('branch', 'create', 'POST', formData);
+        if (response.success) {
+            showSuccess('تم إنشاء الفرع بنجاح');
+            document.getElementById('createBranchForm').reset();
+            document.getElementById('createBranchModal').classList.add('hidden');
+            await loadBranches();
+        } else {
+            showError(response.message || 'حدث خطأ أثناء إنشاء الفرع');
+        }
+    } catch (error) {
+        showError('حدث خطأ أثناء إنشاء الفرع');
+        console.error(error);
+    }
+}
+
+async function updateBranch(event) {
+    event.preventDefault();
+    
+    const formData = {
+        id: document.getElementById('editBranchId').value,
+        name: document.getElementById('editBranchName').value,
+        location: document.getElementById('editBranchLocation').value,
+        phone: document.getElementById('editBranchPhone').value
+    };
+
+    try {
+        const response = await apiCall('branch', 'update', 'POST', formData);
+        if (response.success) {
+            showSuccess('تم تحديث الفرع بنجاح');
+            document.getElementById('editBranchModal').classList.add('hidden');
+            await loadBranches();
+        } else {
+            showError(response.message || 'حدث خطأ أثناء تحديث الفرع');
+        }
+    } catch (error) {
+        showError('حدث خطأ أثناء تحديث الفرع');
+        console.error(error);
+    }
+}
+
+async function deleteBranch(branchId) {
+    const result = await showConfirm('هل أنت متأكد من حذف هذا الفرع؟');
+    if (result.isConfirmed) {
+        try {
+            const response = await apiCall('branch', 'delete', 'POST', { id: branchId });
+            if (response.success) {
+                showSuccess('تم حذف الفرع بنجاح');
+                await loadBranches();
+            } else {
+                showError(response.message || 'حدث خطأ أثناء حذف الفرع');
+            }
+        } catch (error) {
+            showError('حدث خطأ أثناء حذف الفرع');
+            console.error(error);
+        }
+    }
+}
+
+function displayBranches(branches) {
+    const tableBody = document.querySelector('#branchesTable tbody');
+    tableBody.innerHTML = '';
+    
+    branches.forEach(branch => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">${branch.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${branch.name}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${branch.location}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${branch.phone}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+                <button onclick="editBranch(${branch.id})" class="text-indigo-600 hover:text-indigo-900">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteBranch(${branch.id})" class="text-red-600 hover:text-red-900 ml-4">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Event Listeners
+document.getElementById('createBranchForm')?.addEventListener('submit', createBranch);
+document.getElementById('editBranchForm')?.addEventListener('submit', updateBranch); 

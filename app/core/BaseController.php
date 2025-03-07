@@ -20,7 +20,7 @@ abstract class BaseController {
         if (class_exists($modelClass)) {
             return new $modelClass($this->db);
         }
-        throw new \Exception("Model {$model} not found");
+        throw new \Exception("Model not found: {$model}");
     }
 
     protected function renderView($view, $data = []) {
@@ -96,8 +96,8 @@ abstract class BaseController {
     }
 
     protected function redirect($url) {
-        header("Location: /NMaterailManegmentT/public/" . $url);
-        exit();
+        header('Location: ' . $this->view->url($url));
+        exit;
     }
 
     protected function isAjax() {
@@ -108,7 +108,7 @@ abstract class BaseController {
     protected function json($data) {
         header('Content-Type: application/json');
         echo json_encode($data);
-        exit();
+        exit;
     }
 
     protected function isPost() {
@@ -117,5 +117,34 @@ abstract class BaseController {
 
     protected function isGet() {
         return $_SERVER['REQUEST_METHOD'] === 'GET';
+    }
+
+    protected function getPost($key = null, $default = null) {
+        if ($key === null) {
+            return $_POST;
+        }
+        return $_POST[$key] ?? $default;
+    }
+
+    protected function getQuery($key = null, $default = null) {
+        if ($key === null) {
+            return $_GET;
+        }
+        return $_GET[$key] ?? $default;
+    }
+
+    protected function validateCSRF() {
+        if (!isset($_POST['csrf_token']) || !isset($_SESSION['csrf_token']) || 
+            $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            throw new \Exception('CSRF token validation failed');
+        }
+    }
+
+    protected function apiUrl($controller, $action = 'index', $params = []) {
+        $url = "/NMaterailManegmentT/public/api/{$controller}/{$action}";
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
+        }
+        return $url;
     }
 } 

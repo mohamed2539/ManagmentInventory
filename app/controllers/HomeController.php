@@ -6,6 +6,6 @@ use app\core\BaseController;
 
 class HomeController extends BaseController {
     public function index() {
-        $this->renderView('home/index');
+        $this->view->render('home/index');
     }
 } 

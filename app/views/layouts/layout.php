@@ -28,14 +28,10 @@ if (!isset($_SESSION['user_id'])) {
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <span class="text-white font-bold">نظام إدارة المواد</span>
+                        <a href="<?= $this->url('') ?>" class="text-white font-bold">نظام إدارة المواد</a>
                     </div>
                     <div class="hidden md:block">
                         <div class="ml-10 flex items-baseline space-x-4">
-                            <a href="<?= $this->url('home') ?>" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                الرئيسية
-                            </a>
                             <a href="<?= $this->url('materials') ?>" 
                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                                 المواد
@@ -87,7 +83,7 @@ if (!isset($_SESSION['user_id'])) {
                         <div class="flex items-center">
                             <span class="text-gray-300 mr-4"><?= $this->escape($_SESSION['full_name'] ?? '') ?></span>
                             <a href="<?= $this->url('auth/logout') ?>" 
-                               class="text-red-600 hover:text-red-800">
+                               class="text-red-500 hover:text-red-400">
                                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
                             </a>
                         </div>
@@ -98,41 +94,41 @@ if (!isset($_SESSION['user_id'])) {
 
         <!-- Mobile menu -->
         <div class="md:hidden">
-            <div class="pt-2 pb-3 space-y-1">
-                <a href="<?= $this->url('dashboard') ?>" 
-                   class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
-                    <i class="fas fa-tachometer-alt ml-2"></i>
-                    لوحة التحكم
-                </a>
-                <a href="<?= $this->url('user') ?>" 
-                   class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
-                    <i class="fas fa-users ml-2"></i>
-                    المستخدمين
-                </a>
-                <a href="<?= $this->url('branch') ?>" 
-                   class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
-                    <i class="fas fa-building ml-2"></i>
-                    الفروع
-                </a>
-                <a href="<?= $this->url('supplier') ?>" 
-                   class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
-                    <i class="fas fa-truck ml-2"></i>
-                    الموردين
-                </a>
-                <a href="<?= $this->url('category') ?>" 
-                   class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
-                    <i class="fas fa-tags ml-2"></i>
-                    الأقسام
-                </a>
+            <div class="px-2 pt-2 pb-3 space-y-1">
                 <a href="<?= $this->url('materials') ?>" 
-                   class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
+                   class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
                     <i class="fas fa-box ml-2"></i>
                     المواد
                 </a>
                 <a href="<?= $this->url('transactions') ?>" 
-                   class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
+                   class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
                     <i class="fas fa-exchange-alt ml-2"></i>
                     المعاملات
+                </a>
+                <a href="<?= $this->url('dashboard') ?>" 
+                   class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-tachometer-alt ml-2"></i>
+                    لوحة التحكم
+                </a>
+                <a href="<?= $this->url('user') ?>" 
+                   class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-users ml-2"></i>
+                    المستخدمين
+                </a>
+                <a href="<?= $this->url('branch') ?>" 
+                   class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-building ml-2"></i>
+                    الفروع
+                </a>
+                <a href="<?= $this->url('supplier') ?>" 
+                   class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-truck ml-2"></i>
+                    الموردين
+                </a>
+                <a href="<?= $this->url('category') ?>" 
+                   class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-tags ml-2"></i>
+                    الأقسام
                 </a>
             </div>
         </div>
@@ -154,6 +150,5 @@ if (!isset($_SESSION['user_id'])) {
 
     <!-- Custom JavaScript -->
     <script src="<?= $this->asset('js/main.js') ?>"></script>
-    <script src="<?= $this->asset('js/branches.js') ?>"></script>
 </body>
 </html> 

@@ -6,8 +6,12 @@ RewriteBase /NMaterailManegmentT/public/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Rewrite all other requests to index.php
-RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+# Handle API requests
+RewriteRule ^api/([^/]+)/([^/]+)/?$ index.php?controller=$1&action=$2 [QSA,L]
+
+# Handle regular requests
+RewriteRule ^([^/]+)/?$ index.php?controller=$1&action=index [QSA,L]
+RewriteRule ^([^/]+)/([^/]+)/?$ index.php?controller=$1&action=$2 [QSA,L]
 
 # Handle errors
 ErrorDocument 404 /NMaterailManegmentT/public/error/notFound
@@ -20,4 +24,6 @@ Options -Indexes
 AddDefaultCharset UTF-8
 
 # Enable CORS
-Header set Access-Control-Allow-Origin "*" 
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, X-Requested-With" 
