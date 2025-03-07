@@ -8,7 +8,7 @@ use app\models\Category;
 use app\models\Supplier;
 use Exception;
 
-class MaterialController {
+class MaterialsController {
     private $db;
     private $material;
     private $category;
@@ -35,7 +35,7 @@ class MaterialController {
             require_once __DIR__ . '/../views/materials/index.php';
         } catch (Exception $e) {
             $_SESSION['error_message'] = "حدث خطأ أثناء تحميل المواد: " . $e->getMessage();
-            header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=index');
+            header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=index');
             exit;
         }
     }
@@ -73,7 +73,7 @@ class MaterialController {
             $_SESSION['error_message'] = $e->getMessage();
         }
 
-        header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=index');
+        header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=index');
         exit;
     }
 
@@ -95,7 +95,7 @@ class MaterialController {
             require_once __DIR__ . '/../views/materials/edit.php';
         } catch (Exception $e) {
             $_SESSION['error_message'] = $e->getMessage();
-            header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=index');
+            header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=index');
             exit;
         }
     }
@@ -130,7 +130,7 @@ class MaterialController {
             $_SESSION['error_message'] = $e->getMessage();
         }
 
-        header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=index');
+        header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=index');
         exit;
     }
 
@@ -162,7 +162,7 @@ class MaterialController {
             $_SESSION['error_message'] = $e->getMessage();
         }
 
-        header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=index');
+        header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=index');
         exit;
     }
 
@@ -193,7 +193,7 @@ class MaterialController {
                 exit;
             }
             $_SESSION['error_message'] = $e->getMessage();
-            header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=search');
+            header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=search');
             exit;
         }
     }
@@ -223,7 +223,7 @@ class MaterialController {
             require_once __DIR__ . '/../views/materials/liveQuantity.php';
         } catch (Exception $e) {
             $_SESSION['error_message'] = $e->getMessage();
-            header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=index');
+            header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=index');
             exit;
         }
     }

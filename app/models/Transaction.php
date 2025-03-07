@@ -1,77 +1,82 @@
 <?php
 
+namespace app\models;
+
+use PDO;
+use Exception;
+
 class Transaction {
     private $db;
     private $table = 'transactions';
 
-    public function __construct($db) {
+    public function __construct(PDO $db) {
         $this->db = $db;
     }
 
     public function create($data) {
         try {
+            // التحقق من وجود المادة وكميتها
+            $material = $this->getMaterialByCode($data['material_code']);
+            if (!$material) {
+                throw new Exception("المادة غير موجودة");
+            }
+
+            if ($data['type'] === 'withdrawal' && $material['quantity'] < $data['quantity']) {
+                throw new Exception("الكمية المتوفرة غير كافية");
+            }
+
             $this->db->beginTransaction();
 
-            // Insert transaction
-            $sql = "INSERT INTO " . $this->table . " 
-                    (material_id, user_id, quantity, type, notes, created_at) 
-                    VALUES (:material_id, :user_id, :quantity, :type, :notes, NOW())";
+            // إنشاء المعاملة
+            $stmt = $this->db->prepare("
+                INSERT INTO transactions (material_code, quantity, type, notes, user_id, created_at)
+                VALUES (:material_code, :quantity, :type, :notes, :user_id, NOW())
+            ");
 
-            $stmt = $this->db->prepare($sql);
-            
-            $stmt->bindParam(':material_id', $data['material_id']);
-            $stmt->bindParam(':user_id', $data['user_id']);
-            $stmt->bindParam(':quantity', $data['quantity']);
-            $stmt->bindParam(':type', $data['type']); // 'withdrawal' or 'addition'
-            $stmt->bindParam(':notes', $data['notes']);
+            $stmt->execute([
+                'material_code' => $data['material_code'],
+                'quantity' => $data['quantity'],
+                'type' => $data['type'],
+                'notes' => $data['notes'],
+                'user_id' => $data['user_id']
+            ]);
 
-            $stmt->execute();
+            // تحديث كمية المادة
+            $newQuantity = $data['type'] === 'addition' 
+                ? $material['quantity'] + $data['quantity']
+                : $material['quantity'] - $data['quantity'];
 
-            // Update material quantity
-            $quantityChange = ($data['type'] === 'withdrawal') ? -$data['quantity'] : $data['quantity'];
-            
-            $sql = "UPDATE materials 
-                    SET quantity = quantity + :quantity,
-                        updated_at = NOW()
-                    WHERE id = :material_id 
-                    AND (quantity + :check_quantity) >= 0"; // Prevent negative quantity
+            $stmt = $this->db->prepare("
+                UPDATE materials 
+                SET quantity = :quantity, updated_at = NOW()
+                WHERE code = :code
+            ");
 
-            $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(':quantity', $quantityChange);
-            $stmt->bindParam(':check_quantity', $quantityChange);
-            $stmt->bindParam(':material_id', $data['material_id']);
-            
-            $result = $stmt->execute();
-            
-            if ($stmt->rowCount() === 0) {
-                throw new Exception("الكمية المتاحة غير كافية");
-            }
+            $stmt->execute([
+                'quantity' => $newQuantity,
+                'code' => $data['material_code']
+            ]);
 
             $this->db->commit();
             return true;
         } catch (Exception $e) {
             $this->db->rollBack();
-            error_log("Error creating transaction: " . $e->getMessage());
-            throw $e;
+            throw new Exception("خطأ في إنشاء المعاملة: " . $e->getMessage());
         }
     }
 
     public function getAll() {
         try {
-            $sql = "SELECT t.*, m.name as material_name, m.code as material_code, 
-                           u.name as user_name
-                    FROM " . $this->table . " t
-                    LEFT JOIN materials m ON t.material_id = m.id
-                    LEFT JOIN users u ON t.user_id = u.id
-                    ORDER BY t.created_at DESC";
-            
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute();
-            
+            $stmt = $this->db->query("
+                SELECT t.*, m.name as material_name, u.name as user_name 
+                FROM transactions t 
+                LEFT JOIN materials m ON t.material_code = m.code
+                LEFT JOIN users u ON t.user_id = u.id 
+                ORDER BY t.created_at DESC
+            ");
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Error getting transactions: " . $e->getMessage());
-            return [];
+        } catch (Exception $e) {
+            throw new Exception("خطأ في جلب المعاملات: " . $e->getMessage());
         }
     }
 
@@ -95,24 +100,21 @@ class Transaction {
         }
     }
 
-    public function getByMaterialId($material_id) {
+    public function getByMaterialId($materialId) {
         try {
-            $sql = "SELECT t.*, m.name as material_name, m.code as material_code, 
-                           u.name as user_name
-                    FROM " . $this->table . " t
-                    LEFT JOIN materials m ON t.material_id = m.id
-                    LEFT JOIN users u ON t.user_id = u.id
-                    WHERE t.material_id = :material_id
-                    ORDER BY t.created_at DESC";
-            
-            $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(':material_id', $material_id);
-            $stmt->execute();
-            
+            $stmt = $this->db->prepare("
+                SELECT t.*, m.name as material_name, u.name as user_name 
+                FROM transactions t 
+                LEFT JOIN materials m ON t.material_code = m.code
+                LEFT JOIN users u ON t.user_id = u.id 
+                WHERE m.id = :material_id
+                ORDER BY t.created_at DESC
+            ");
+
+            $stmt->execute(['material_id' => $materialId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Error getting transactions by material ID: " . $e->getMessage());
-            return [];
+        } catch (Exception $e) {
+            throw new Exception("خطأ في جلب معاملات المادة: " . $e->getMessage());
         }
     }
 
@@ -139,25 +141,29 @@ class Transaction {
 
     public function search($term) {
         try {
+            $stmt = $this->db->prepare("
+                SELECT t.*, m.name as material_name, u.name as user_name 
+                FROM transactions t 
+                LEFT JOIN materials m ON t.material_code = m.code
+                LEFT JOIN users u ON t.user_id = u.id 
+                WHERE m.name LIKE :term 
+                   OR m.code LIKE :term 
+                   OR t.type LIKE :term 
+                   OR u.name LIKE :term
+                ORDER BY t.created_at DESC
+            ");
+
             $term = "%$term%";
-            $sql = "SELECT t.*, m.name as material_name, m.code as material_code, 
-                           u.name as user_name
-                    FROM " . $this->table . " t
-                    LEFT JOIN materials m ON t.material_id = m.id
-                    LEFT JOIN users u ON t.user_id = u.id
-                    WHERE m.code LIKE :term 
-                    OR m.name LIKE :term 
-                    OR u.name LIKE :term
-                    ORDER BY t.created_at DESC";
-            
-            $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(':term', $term);
-            $stmt->execute();
-            
+            $stmt->execute(['term' => $term]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Error searching transactions: " . $e->getMessage());
-            return [];
+        } catch (Exception $e) {
+            throw new Exception("خطأ في البحث عن المعاملات: " . $e->getMessage());
         }
+    }
+
+    private function getMaterialByCode($code) {
+        $stmt = $this->db->prepare("SELECT * FROM materials WHERE code = :code");
+        $stmt->execute(['code' => $code]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 } 

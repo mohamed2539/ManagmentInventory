@@ -4,9 +4,10 @@ namespace app\controllers;
 
 use app\core\Database;
 use app\models\Transaction;
+use app\models\Material;
 use Exception;
 
-class TransactionController {
+class TransactionsController {
     private $db;
     private $transaction;
     private $material;
@@ -63,7 +64,7 @@ class TransactionController {
             $_SESSION['error_message'] = $e->getMessage();
         }
 
-        header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=liveQuantity');
+        header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=liveQuantity');
         exit;
     }
 
@@ -96,7 +97,7 @@ class TransactionController {
             $_SESSION['error_message'] = $e->getMessage();
         }
 
-        header('Location: /NMaterailManegmentT/public/index.php?controller=material&action=liveQuantity');
+        header('Location: /NMaterailManegmentT/public/index.php?controller=materials&action=liveQuantity');
         exit;
     }
 
@@ -121,7 +122,7 @@ class TransactionController {
                 exit;
             }
             $_SESSION['error_message'] = $e->getMessage();
-            header('Location: /NMaterailManegmentT/public/index.php?controller=transaction&action=index');
+            header('Location: /NMaterailManegmentT/public/index.php?controller=transactions&action=index');
             exit;
         }
     }
@@ -147,7 +148,7 @@ class TransactionController {
                 exit;
             }
             $_SESSION['error_message'] = $e->getMessage();
-            header('Location: /NMaterailManegmentT/public/index.php?controller=transaction&action=index');
+            header('Location: /NMaterailManegmentT/public/index.php?controller=transactions&action=index');
             exit;
         }
     }
