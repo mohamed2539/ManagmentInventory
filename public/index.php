@@ -22,8 +22,8 @@ $url = filter_var($url, FILTER_SANITIZE_URL);
 $url = explode('/', $url);
 
 // Set default controller and action
-$controller = !empty($url[0]) ? strtolower($url[0]) : 'home';
-$action = !empty($url[1]) ? strtolower($url[1]) : 'index';
+$controller = !empty($url[0]) ? $url[0] : 'home';
+$action = !empty($url[1]) ? $url[1] : 'index';
 
 // Remove controller and action from the URL array
 array_shift($url);
@@ -35,8 +35,8 @@ if (!empty($url)) {
 $params = $url;
 
 // Build the controller class name with proper casing
-$controllerName = ucfirst($controller);
-$controllerClass = "app\\controllers\\{$controllerName}Controller";
+$controllerName = ucfirst($controller) . 'Controller';
+$controllerClass = "app\\controllers\\{$controllerName}";
 
 try {
     // Check if controller exists
@@ -57,10 +57,14 @@ try {
 
 } catch (\Exception $e) {
     if (DEBUG) {
-        throw $e;
+        echo "<pre>";
+        echo "Error: " . $e->getMessage() . "\n";
+        echo "File: " . $e->getFile() . "\n";
+        echo "Line: " . $e->getLine() . "\n";
+        echo "Stack trace:\n" . $e->getTraceAsString();
+        echo "</pre>";
     } else {
-        // Redirect to error controller
-        $errorController = new \app\controllers\ErrorController();
-        $errorController->notFound();
+        header("Location: /NMaterailManegmentT/public/error/notFound");
+        exit;
     }
 } 
