@@ -8,6 +8,20 @@
         </button>
     </div>
 
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline"><?php echo $_SESSION['success_message']; ?></span>
+        </div>
+        <?php unset($_SESSION['success_message']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline"><?php echo $_SESSION['error_message']; ?></span>
+        </div>
+        <?php unset($_SESSION['error_message']); ?>
+    <?php endif; ?>
+
     <?php if (isset($error)): ?>
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
             <span class="block sm:inline"><?php echo $error; ?></span>
@@ -15,7 +29,7 @@
     <?php endif; ?>
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
+        <table id="branchesTable" class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم الفرع</th>
@@ -27,7 +41,7 @@
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody id="branchesTableBody" class="bg-white divide-y divide-gray-200">
                 <?php foreach ($branches as $branch): ?>
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo htmlspecialchars($branch['name']); ?></td>
@@ -41,7 +55,8 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="openEditModal(<?php echo $branch['id']; ?>)" class="text-blue-600 hover:text-blue-900 ml-3">تعديل</button>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=branch&action=edit&id=<?php echo $branch['id']; ?>"
+                               class="text-blue-600 hover:text-blue-900 ml-3">تعديل</a>
                             <button onclick="deleteBranch(<?php echo $branch['id']; ?>)" class="text-red-600 hover:text-red-900">حذف</button>
                         </td>
                     </tr>
@@ -56,7 +71,7 @@
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <h3 class="text-lg font-medium text-gray-900 mb-4">إضافة فرع جديد</h3>
-            <form id="createForm" class="space-y-4">
+            <form id="createBranchForm" method="POST" action="/NMaterailManegmentT/public/index.php?controller=branch&action=create" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">اسم الفرع</label>
                     <input type="text" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -90,53 +105,6 @@
                 </div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeCreateModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">إلغاء</button>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">حفظ</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Edit Branch -->
-<div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">تعديل الفرع</h3>
-            <form id="editForm" class="space-y-4">
-                <input type="hidden" name="id" id="editId">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">اسم الفرع</label>
-                    <input type="text" name="name" id="editName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">العنوان</label>
-                    <input type="text" name="address" id="editAddress" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">الهاتف</label>
-                    <input type="tel" name="phone" id="editPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">البريد الإلكتروني</label>
-                    <input type="email" name="email" id="editEmail" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">مدير الفرع</label>
-                    <input type="text" name="manager_name" id="editManagerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">الحالة</label>
-                    <select name="status" id="editStatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="active">نشط</option>
-                        <option value="inactive">غير نشط</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">ملاحظات</label>
-                    <textarea name="notes" id="editNotes" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeEditModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">إلغاء</button>
                     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">حفظ</button>
                 </div>
             </form>

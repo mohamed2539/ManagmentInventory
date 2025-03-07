@@ -2,121 +2,117 @@
 
 namespace app\controllers;
 
-use app\core\BaseController;
+use app\core\Database;
 use app\models\Category;
 use Exception;
 
-class CategoryController extends BaseController {
-    private $categoryModel;
+class CategoryController {
+    private $db;
+    private $category;
 
     public function __construct() {
-        $this->categoryModel = new Category();
+        $this->db = (new Database())->getConnection();
+        $this->category = new Category($this->db);
     }
 
     public function index() {
         try {
-            $categories = $this->categoryModel->getAll();
-            $this->renderView('categories/index', ['categories' => $categories]);
+            $categories = $this->category->getAll();
+            require_once __DIR__ . '/../views/categories/index.php';
         } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            $_SESSION['error_message'] = "حدث خطأ أثناء تحميل الأقسام: " . $e->getMessage();
+            header('Location: /NMaterailManegmentT/public/index.php?controller=home&action=index');
+            exit;
         }
     }
 
     public function create() {
-        $this->renderView('categories/index');
-    }
-
-    public function store() {
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                throw new Exception('Invalid request method');
+                require_once __DIR__ . '/../views/categories/create.php';
+                exit;
             }
 
-            $result = $this->categoryModel->create($_POST);
-            
-            if ($result) {
-                $this->jsonResponse([
-                    'status' => 'success',
-                    'message' => 'Category created successfully'
-                ]);
-            } else {
-                throw new Exception('Failed to create category');
+            $data = [
+                'name' => $_POST['name'],
+                'description' => $_POST['description'] ?? ''
+            ];
+
+            if ($this->category->create($data)) {
+                $_SESSION['success_message'] = "تم إضافة القسم بنجاح";
+                header('Location: /NMaterailManegmentT/public/index.php?controller=category&action=index');
+                exit;
             }
         } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            $_SESSION['error_message'] = $e->getMessage();
+            header('Location: /NMaterailManegmentT/public/index.php?controller=category&action=create');
+            exit;
+        }
+    }
+
+    public function edit() {
+        try {
+            if (!isset($_GET['id'])) {
+                throw new Exception('معرف القسم مطلوب');
+            }
+
+            $id = $_GET['id'];
+            $category = $this->category->getById($id);
+
+            if (!$category) {
+                throw new Exception('القسم غير موجود');
+            }
+
+            require_once __DIR__ . '/../views/categories/edit.php';
+        } catch (Exception $e) {
+            $_SESSION['error_message'] = $e->getMessage();
+            header('Location: /NMaterailManegmentT/public/index.php?controller=category&action=index');
+            exit;
         }
     }
 
     public function update() {
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                throw new Exception('Invalid request method');
+                throw new Exception('طريقة الطلب غير صحيحة');
             }
 
-            if (!isset($_POST['id'])) {
-                throw new Exception('Category ID is required');
-            }
+            $data = [
+                'id' => $_POST['id'],
+                'name' => $_POST['name'],
+                'description' => $_POST['description'] ?? ''
+            ];
 
-            $result = $this->categoryModel->update($_POST);
-            
-            if ($result) {
-                $this->jsonResponse([
-                    'status' => 'success',
-                    'message' => 'Category updated successfully'
-                ]);
-            } else {
-                throw new Exception('Failed to update category');
+            if ($this->category->update($data)) {
+                $_SESSION['success_message'] = "تم تحديث القسم بنجاح";
             }
         } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            $_SESSION['error_message'] = $e->getMessage();
         }
+
+        header('Location: /NMaterailManegmentT/public/index.php?controller=category&action=index');
+        exit;
     }
 
     public function delete() {
         try {
-            if (!isset($_GET['id'])) {
-                throw new Exception('Category ID is required');
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                throw new Exception('طريقة الطلب غير صحيحة');
             }
 
-            $result = $this->categoryModel->delete($_GET['id']);
-            
-            if ($result) {
-                $this->jsonResponse([
-                    'status' => 'success',
-                    'message' => 'Category deleted successfully'
-                ]);
-            } else {
-                throw new Exception('Failed to delete category');
+            if (!isset($_POST['id'])) {
+                throw new Exception('معرف القسم مطلوب');
+            }
+
+            $id = $_POST['id'];
+            if ($this->category->delete($id)) {
+                $_SESSION['success_message'] = "تم حذف القسم بنجاح";
             }
         } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            $_SESSION['error_message'] = $e->getMessage();
         }
-    }
 
-    public function getCategories() {
-        try {
-            $categories = $this->categoryModel->getAll();
-            $this->jsonResponse([
-                'status' => 'success',
-                'data' => $categories
-            ]);
-        } catch (Exception $e) {
-            $this->jsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        header('Location: /NMaterailManegmentT/public/index.php?controller=category&action=index');
+        exit;
     }
 } 

@@ -2,34 +2,36 @@
 
 namespace app\models;
 
-use app\core\Database;
 use PDO;
 use Exception;
 
 class Supplier {
     private $db;
 
-    public function __construct() {
-        $this->db = new Database();
+    public function __construct(PDO $db) {
+        $this->db = $db;
     }
 
     public function getAll() {
         try {
-            $query = "SELECT * FROM suppliers WHERE is_deleted = 0 ORDER BY name";
-            $stmt = $this->db->query($query);
+            $query = "SELECT * FROM suppliers";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
-            throw new Exception('خطأ في جلب بيانات الموردين: ' . $e->getMessage());
+            throw new Exception("خطأ في جلب الموردين: " . $e->getMessage());
         }
     }
 
     public function getById($id) {
         try {
-            $query = "SELECT * FROM suppliers WHERE id = :id AND is_deleted = 0";
-            $stmt = $this->db->query($query, ['id' => $id]);
+            $query = "SELECT * FROM suppliers WHERE id = :id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
-            throw new Exception('خطأ في جلب بيانات المورد: ' . $e->getMessage());
+            throw new Exception("خطأ في جلب المورد: " . $e->getMessage());
         }
     }
 

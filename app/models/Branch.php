@@ -55,9 +55,12 @@ class Branch {
 
             // التحقق من عدم تكرار اسم الفرع
             $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM branches WHERE name = :name AND deleted_at IS NULL");
-            $stmt->execute([':name' => $data['name']]);
+            $stmt->execute([':name' => trim($data['name'])]);
             if ($stmt->fetchColumn() > 0) {
-                throw new Exception("هذا الفرع موجود بالفعل");
+                return [
+                    'status' => 'error',
+                    'message' => 'هذا الفرع موجود بالفعل'
+                ];
             }
 
             $stmt = $this->pdo->prepare("
@@ -66,13 +69,13 @@ class Branch {
             ");
 
             $success = $stmt->execute([
-                ':name' => $data['name'],
-                ':address' => $data['address'] ?? '',
-                ':phone' => $data['phone'] ?? '',
-                ':email' => $data['email'] ?? '',
-                ':manager_name' => $data['manager_name'] ?? '',
+                ':name' => trim($data['name']),
+                ':address' => trim($data['address'] ?? ''),
+                ':phone' => trim($data['phone'] ?? ''),
+                ':email' => trim($data['email'] ?? ''),
+                ':manager_name' => trim($data['manager_name'] ?? ''),
                 ':status' => $data['status'] ?? 'active',
-                ':notes' => $data['notes'] ?? ''
+                ':notes' => trim($data['notes'] ?? '')
             ]);
 
             if (!$success) {
@@ -193,10 +196,16 @@ class Branch {
                 throw new Exception("فشل حذف الفرع");
             }
 
-            return true;
+            return [
+                'status' => 'success',
+                'message' => 'تم حذف الفرع بنجاح'
+            ];
         } catch (Exception $e) {
             error_log($e->getMessage());
-            return false;
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
         }
     }
 } 

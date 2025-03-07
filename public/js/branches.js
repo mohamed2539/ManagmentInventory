@@ -1,6 +1,6 @@
 // تحميل الفروع عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    loadBranches();
+    //loadBranches();
 });
 
 // تحميل الفروع
@@ -48,7 +48,7 @@ function openCreateModal() {
 }
 
 // فتح نافذة تعديل فرع
-function openEditModal(branchId) {
+/*function openEditModal(branchId) {
     fetch(`/NMaterailManegmentT/public/index.php?controller=branch&action=edit&id=${branchId}`)
         .then(response => response.json())
         .then(data => {
@@ -71,7 +71,7 @@ function openEditModal(branchId) {
             console.error('Error:', error);
             showError('حدث خطأ أثناء تحميل بيانات الفرع');
         });
-}
+}*/
 
 // إغلاق النوافذ المنبثقة
 function closeCreateModal() {
@@ -148,7 +148,7 @@ document.getElementById('editBranchForm').addEventListener('submit', function(e)
 });
 
 // حذف فرع
-function deleteBranch(branchId) {
+/*function deleteBranch(branchId) {
     if (confirm('هل أنت متأكد من حذف هذا الفرع؟')) {
         fetch(`/NMaterailManegmentT/public/index.php?controller=branch&action=delete&id=${branchId}`, {
             method: 'POST'
@@ -167,7 +167,39 @@ function deleteBranch(branchId) {
             showError('حدث خطأ أثناء حذف الفرع');
         });
     }
+}*/
+
+
+
+function deleteBranch(branchId) {
+    if (confirm('هل أنت متأكد من حذف هذا الفرع؟')) {
+        fetch(`/NMaterailManegmentT/public/index.php?controller=branch&action=delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `id=${branchId}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showSuccess('تم حذف الفرع بنجاح');
+                    loadBranches();
+                } else {
+                    showError(data.message || 'خطأ في حذف الفرع');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('حدث خطأ أثناء حذف الفرع');
+            });
+    }
 }
+
+
+
+
+
 
 // عرض رسالة نجاح
 function showSuccess(message) {

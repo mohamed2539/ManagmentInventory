@@ -16,60 +16,61 @@
 </head>
 <body class="bg-gray-100">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                        <a href="/NMaterailManegmentT/public/index.php?controller=dashboard" class="text-xl font-bold text-gray-800">
-                            نظام إدارة المواد
-                        </a>
+    <nav class="bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <span class="text-white font-bold">نظام إدارة المواد</span>
                     </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden md:ml-6 md:flex md:space-x-8">
-                        <a href="/NMaterailManegmentT/public/index.php?controller=dashboard" 
-                           class="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600">
-                            <i class="fas fa-tachometer-alt ml-2"></i>
-                            لوحة التحكم
-                        </a>
-
-                        <a href="/NMaterailManegmentT/public/index.php?controller=users" 
-                           class="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600">
-                            <i class="fas fa-users ml-2"></i>
-                            المستخدمين
-                        </a>
-
-                        <a href="/NMaterailManegmentT/public/index.php?controller=branch" 
-                           class="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600">
-                            <i class="fas fa-building ml-2"></i>
-                            الفروع
-                        </a>
-
-                        <a href="/NMaterailManegmentT/public/index.php?controller=suppliers" 
-                           class="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600">
-                            <i class="fas fa-truck ml-2"></i>
-                            الموردين
-                        </a>
-
-                        <a href="/NMaterailManegmentT/public/index.php?controller=categories" 
-                           class="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600">
-                            <i class="fas fa-tags ml-2"></i>
-                            الأقسام
-                        </a>
-
-                        <a href="/NMaterailManegmentT/public/index.php?controller=materials" 
-                           class="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600">
-                            <i class="fas fa-box ml-2"></i>
-                            المواد
-                        </a>
-
-                        <a href="/NMaterailManegmentT/public/index.php?controller=transactions" 
-                           class="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600">
-                            <i class="fas fa-exchange-alt ml-2"></i>
-                            المعاملات
-                        </a>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="/NMaterailManegmentT/public/index.php?controller=home&action=index" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                الرئيسية
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=material&action=index" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                المواد
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=transaction&action=index" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                المعاملات
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=material&action=search" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                البحث المباشر
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=material&action=liveQuantity" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                تحديث الكمية المباشر
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=dashboard" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-tachometer-alt ml-2"></i>
+                                لوحة التحكم
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=user&action=index" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-users ml-2"></i>
+                                المستخدمين
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=branch&action=index" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-building ml-2"></i>
+                                الفروع
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=supplier&action=index" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-truck ml-2"></i>
+                                الموردين
+                            </a>
+                            <a href="/NMaterailManegmentT/public/index.php?controller=category&action=index" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-tags ml-2"></i>
+                                الأقسام
+                            </a>
+                        </div>
                     </div>
                 </div>
                 
@@ -121,13 +122,13 @@
                     الأقسام
                 </a>
 
-                <a href="/NMaterailManegmentT/public/index.php?controller=materials" 
+                <a href="/NMaterailManegmentT/public/index.php?controller=material&action=index" 
                    class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
                     <i class="fas fa-box ml-2"></i>
                     المواد
                 </a>
 
-                <a href="/NMaterailManegmentT/public/index.php?controller=transactions" 
+                <a href="/NMaterailManegmentT/public/index.php?controller=transaction&action=index" 
                    class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:text-blue-600">
                     <i class="fas fa-exchange-alt ml-2"></i>
                     المعاملات
